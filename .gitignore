@@ -1,0 +1,6 @@
+**/.vscode
+**/file:
+/.idea/
+**/.DS_Store
+/logs/
+/config/besu/genesis.json
