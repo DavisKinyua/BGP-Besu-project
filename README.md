@@ -3,10 +3,10 @@
 ## Table of Contents
 
 - [Iob Besu Network Workshop]
-  - [Exercise 1: Configure and run a private QBFT (POA) Besu Network]
-  - [Exercise 2: Deploy a new validator node and join the Network]
-  - [Exercise 3: Deploy and explore analytics tools]
-  - [Exercise 4: Deploy and interact with contract](./erc20/README.md)
+  - [Exercise 1: Configure and run a private QBFT (POA) Besu Network](./README.md/#exercise-1-configure-and-run-a-private-qbft-poa-besu-network)
+  - [Exercise 2: Deploy a new validator node and join the Network](./README.md/#exercise-2-deploy-a-new-validator-node-and-join-the-network)
+  - [Exercise 3: Deploy and explore analytics tools](./README.md/#exercise-3-deploy-and-explore-analytics-tools)
+  - [Exercise 4: Deploy and interact with contract](./README.md/#exercise-4-deploy-and-interact-with-contract)
 
 
 ## Prerequisites
@@ -115,7 +115,7 @@ In this exercise, you will:
     ```
 4. Verifiy that validator1 `peerCount`, for example, has changed from 4 to 5
     ```bash
-    curl -X POST --data '{"jsonrpc":"2.0","method":"net_peerCount","params":[],"id":1} localhost:21001'
+    curl -X POST --data '{"jsonrpc":"2.0","method":"net_peerCount","params":[],"id":1}' http://localhost:21001'
     ```
 ## Exercise 3: Deploy and explore analytics tools
 In this exercise, we’ll shift focus from network configuration to monitoring and analytics, adding visibility into the blockchain's performance and activity. Here, you’ll deploy analytics tools that enable you to gain deeper insights into your Besu network, track key metrics, and troubleshoot issues effectively.
