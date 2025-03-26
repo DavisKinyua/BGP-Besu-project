@@ -41,18 +41,12 @@ Start services and the network:
     Starting network...
     [+] Running 13/13
      ✔ Network iob-besu-network                 Created                                                                                                                                                                                                                        0.1s 
-     ✔ Volume "iob-besu-network_grafana"        Created                                                                                                                                                                                                                        0.0s 
-     ✔ Volume "iob-besu-network_prometheus"     Created                                                                                                                                                                                                                        0.0s 
-     ✔ Container iob-besu-network-validator1-1  Started                                                                                                                                                                                                                        0.9s 
-     ✔ Container iob-besu-network-loki-1        Started                                                                                                                                                                                                                        1.0s 
-     ✔ Container iob-besu-network-promtail-1    Started                                                                                                                                                                                                                        0.7s 
-     ✔ Container iob-besu-network-grafana-1     Started                                                                                                                                                                                                                        0.9s 
-     ✔ Container iob-besu-network-prometheus-1  Started                                                                                                                                                                                                                        0.5s 
-     ✔ Container iob-besu-network-validator2-1  Started                                                                                                                                                                                                                        1.6s 
-     ✔ Container iob-besu-network-validator4-1  Started                                                                                                                                                                                                                        1.3s 
-     ✔ Container iob-besu-network-validator3-1  Started                                                                                                                                                                                                                        1.2s 
+     ✔ Container iob-besu-network-validator1  Started                                                                                                                                                                                                                        0.9s 
+     ✔ Container iob-besu-network-validator2  Started                                                                                                                                                                                                                        1.6s 
+     ✔ Container iob-besu-network-validator4  Started                                                                                                                                                                                                                        1.3s 
+     ✔ Container iob-besu-network-validator3  Started                                                                                                                                                                                                                        1.2s 
      ✔ Container rpcnode                        Started                                                                                                                                                                                                                        1.5s 
-     ✔ Container iob-besu-network-explorer-1    Started                                                                                                                                                                                                                        1.9s 
+     ✔ Container iob-besu-network-explorer    Started                                                                                                                                                                                                                        1.9s 
     *************************************
     Iob Besu Network Quickstart 
     *************************************
@@ -62,9 +56,6 @@ Start services and the network:
     JSON-RPC HTTP service endpoint                 : http://localhost:8545
     JSON-RPC WebSocket service endpoint            : ws://localhost:8546
     Web block explorer address                     : http://localhost:25000/explorer/nodes
-    Prometheus address                             : http://localhost:9090/graph
-    Grafana address                                : http://localhost:3000/d/XE4V0WGZz/besu-overview?orgId=1&refresh=10s&from=now-30m&to=now&var-system=All
-    Collated logs using Grafana and Loki           : http://localhost:3000/d/Ak6eXLsPxFemKYKEXfcH/quorum-logs-loki?orgId=1&var-app=besu&var-search=
     
     For more information on the endpoints and services, refer to README.md in the installation directory.
     ```
@@ -91,17 +82,13 @@ In this exercise, you will:
    * network2: validator5 will strart in a diferent network (network2)
 2. Run `docker compose up -d` to update current network with new validator5
     ````
-       ✔ Container iob-besu-network-validator1-1  Running
-       ✔ Container iob-besu-network-prometheus-1  Running
-       ✔ Container iob-besu-network-validator4-1  Running
-       ✔ Container iob-besu-network-loki-1        Running
-       ✔ Container iob-besu-network-grafana-1     Running
-       ✔ Container rpcnode                        Running
-       ✔ Container iob-besu-network-validator3-1  Running
-       ✔ Container iob-besu-network-explorer-1    Running
-       ✔ Container iob-besu-network-validator2-1  Running
-       ✔ Container iob-besu-network-promtail-1    Running
-       ✔ Container iob-besu-network-validator5-1  Started
+       ✔ Container iob-besu-network-validator1  Running
+       ✔ Container iob-besu-network-validator4  Running
+       ✔ Container rpcnode                      Running
+       ✔ Container iob-besu-network-validator3  Running
+       ✔ Container iob-besu-network-explorer    Running
+       ✔ Container iob-besu-network-validator2  Running
+       ✔ Container iob-besu-network-validator5  Started
     ````
 3. Retrieve validator5 **enode**  and add permissions to validators and rpc node using `perm_addNodesToAllowlist` method:
     ```bash
@@ -131,27 +118,27 @@ In this exercise, you will:
 ### Step by step:
 
 1. In the docker-compose.yml file, uncomment the following services and run `docker compose up -d`:
-   * explorer: A tool for browsing blockchain data, including blocks, transactions, and addresses.
    * prometheus: An open-source system for collecting and storing real-time application and infrastructure metrics.
    * loki: A log aggregation tool for efficiently collecting and managing log data from multiple sources.
    * grafana: A visualization platform for creating dashboards to monitor and analyze metrics in real-time.
    * promtail: A log collector that sends logs to Loki for centralized management and search.
     ````
-       ✔ Container iob-besu-network-validator1-1  Running 
-       ✔ Container iob-besu-network-validator4-1  Running
-       ✔ Container rpcnode                        Running   
-       ✔ Container iob-besu-network-validator3-1  Running
-       ✔ Container iob-besu-network-validator5-1  Running  
-       ✔ Container iob-besu-network-validator2-1  Running
-       ✔ Container iob-besu-network-explorer-1    Started
-       ✔ Container iob-besu-network-prometheus-1  Started
-       ✔ Container iob-besu-network-loki-1        Started
-       ✔ Container iob-besu-network-grafana-1     Started  
-       ✔ Container iob-besu-network-promtail-1    Started
+       ✔ Container iob-besu-network-validator1  Running 
+       ✔ Container iob-besu-network-validator4  Running
+       ✔ Container rpcnode                      Running   
+       ✔ Container iob-besu-network-validator3  Running
+       ✔ Container iob-besu-network-validator5  Running  
+       ✔ Container iob-besu-network-validator2  Running
+       ✔ Container iob-besu-network-explorer    Started
+       ✔ Container iob-besu-network-prometheus  Started
+       ✔ Container iob-besu-network-loki        Started
+       ✔ Container iob-besu-network-grafana     Started  
+       ✔ Container iob-besu-network-promtail    Started
     ````
 2. Explore Grafana Besu Dashboard: http://localhost:3000/d/XE4V0WGZz/besu-overview?orgId=1&refresh=10s&from=now-30m&to=now&var-system=All
-3. Explore Logs: http://localhost:3000/d/Ak6eXLsPxFemKYKEXfcH/quorum-logs-loki?orgId=1&var-app=besu&var-search=
-4. Explore blocks and transactions: http://localhost:25000/explorer/nodes
+3. Explore Prometheus: http://localhost:9090/graph
+4. Explore Logs: http://localhost:3000/d/Ak6eXLsPxFemKYKEXfcH/quorum-logs-loki?orgId=1&var-app=besu&var-search=
+5. Explore blocks and transactions: http://localhost:25000/explorer/nodes
 
 ## Exercise 4: Deploy and interact with contract
 [Deploy and interact with contract](./erc20/README.md)
