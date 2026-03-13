@@ -3,5 +3,4 @@
 /.idea/
 **/.DS_Store
 /logs/
-/config/besu/genesis.jsondavisgithub
-davisgithub.pub
+/config/besu/genesis.json
