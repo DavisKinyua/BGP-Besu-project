@@ -26,6 +26,3 @@ schema_config:
         prefix: index_
         period: 24h
 
-# If you would like to disable reporting, uncomment the following lines:
-#analytics:
-#  reporting_enabled: false
