@@ -1,4 +1,4 @@
-# ERC20 workshop with RemixIDE
+# BGPBlockchain Security Project with RemixIDE
 
 ## Requirements
 
@@ -29,9 +29,9 @@
 1. Go to the Remix IDE through the link https://remix.ethereum.org/.
 2. In the *FILE EXPLORER* search for _contracts_ folder and create if it does not exist.
 3. Inside _contracts_:
-   1. Create a file called `ERC20.sol` and copy the content of [ERC20.sol](./ERC20.sol).
-   2. Leave open `ERC20.sol`.
-4. Change to *SOLIDITY COMPILER*, set compiler version _0.6.0_ (EVM VERSION _istanbul_) and use the button *Compile ERC20.sol*.
+   1. Create a file called `BGPRegistry.sol` and copy the content of [BGPregistry.sol](./BGPRegistry.sol).
+   2. Leave open `BGPRegistry.sol`.
+4. Change to *SOLIDITY COMPILER*, set compiler version _0.8.0_ (EVM VERSION _default(osaka)_) and use the button *Compile BGPRegistry.sol*.
 
 # Connecting Remix to Besu
 
@@ -44,33 +44,6 @@
 2. In Remix, change to *DEPLOY & RUN TRANSACTIONS* tab.
 3. Click in the selector of *ENVIRONMENT* and select *Injected Provider - MetaMask*.
 4. In the list of the accounts, select `0xFE3B557E8Fb62b89F4916B721be55cEb828dBd73`.
-5. To deploy the contract, introduce the parámeters: `"BESU WORKSHOP,"B",2`
-   1. *_NAME*: *"BESU WORKSHOP"* is the name of the token. 
-   2. *_SYMBOL*: *"B"* is the symbol of the represented tokes.
-   3. *_DECIMALS_*: *2* is the number of decimals represented in the token, ex: 10,82 -> 1_082 B
+5. To deploy the contract, BGPRegistry.sol
 6. Once is executed, the new deployed contract will appear at the bottom left menu, including the list of methods to interact with it:
-   1. *mint*: We will assign balance to an account.
-      1. *to*: `0x627306090abaB3A6e1400e9345bC60c78a8BEf57`
-      2. *amount*: `10000000`
-      3. Click in *transact*
-      4. Look for the transaction in the list of transaction and review Transfer event.
-   5. *balanceOf*: Asking for the balance of an account.
-      1. *address*: `0x627306090abaB3A6e1400e9345bC60c78a8BEf57`
-      2. Click in *call*
-      3. The result is `10000000`
-      4. *address*: `0xf17f52151EbEF6C7334FAD080c5704D77216b732`
-      5. Click in *call*
-      6. The result is `0`.
-   6. Change in Metamask the account to `0x627306090abaB3A6e1400e9345bC60c78a8BEf57`.
-   7. *transfer*: We will transfer balance between accounts.
-      1. *to*: `0xf17f52151EbEF6C7334FAD080c5704D77216b732`
-      2. *amount*: `5000000`
-      3. Click in *transact*
-      4. Look for the transaction in the list of transaction and review Transfer event.
-   8. *balanceOf*: Asking for the balance of an account.
-      1. *address*: `0x627306090abaB3A6e1400e9345bC60c78a8BEf57`
-      2. Click in *call*
-      3. The result is `5000000`
-      4. *address*: `0xf17f52151EbEF6C7334FAD080c5704D77216b732`
-      5. Click in *call*
-      6. The result is `5000000`.
+

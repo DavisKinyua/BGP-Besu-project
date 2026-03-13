@@ -1,43 +1,31 @@
 #!/bin/bash -u
 
-# Copyright 2018 ConsenSys AG.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
+# Licensed under the Apache License, Version 2.0 
 
 NO_LOCK_REQUIRED=true
 
-. ./.env
-. ./.common.sh
+# Source env if it exists (for color codes etc), creating a dummy .env if missing to avoid errors
+if [ -f ./.env ]; then . ./.env; fi
+if [ -f ./.common.sh ]; then . ./.common.sh; fi
 
-# create log folders with the user permissions so it won't conflict with container permissions
-mkdir -p logs/besu logs/quorum
+# Create log folders with user permissions so they won't conflict with container permissions
+# We need folders for the nodes and the bird routers if mapped
+mkdir -p logs/node1 logs/node2 logs/node3 logs/node4 logs/node5 logs/rpcnode
+mkdir -p bird/socket middleware/data
 
-# Build and run containers and network
-echo "docker-compose.yml" > ${LOCK_FILE}
+# Create lock file
+echo "docker-compose.yml" > ${LOCK_FILE:-".lock"}
 
-echo "${bold}*************************************"
-echo "Iob Besu Network Quickstart"
-echo "*************************************${normal}"
+echo "*************************************"
+echo "BGP-Besu Network Quickstart"
+echo "*************************************"
 echo "Start network"
 echo "--------------------"
 
-if [ -f "docker-compose-deps.yml" ]; then
-    echo "Starting dependencies..."
-    docker compose -f docker-compose-deps.yml up --detach
-    sleep 60
-fi
-
 echo "Starting network..."
+# Ensure middleware is built
 docker compose build --pull
 docker compose up --detach
 
-
-#list services and endpoints
+# List services and endpoints
 ./list.sh

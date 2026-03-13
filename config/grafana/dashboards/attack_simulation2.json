@@ -1,0 +1,408 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 200,
+      "title": "🛑 LIVE ATTACK SIMULATION (Target: 10.100.0.0/24)",
+      "type": "row"
+    },
+    {
+      "datasource": "Loki",
+      "description": "Expected: GREEN (Uni-Guard protects this link)",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "id": 201,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "count_over_time({container_name=~\"$client_protected\"} |= \"status=success\"[30s]) or vector(0)",
+          "legendFormat": "Ping Success Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "max": 15,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": [
+             { "options": { "0": { "text": "DISCONNECTED", "color": "red" } }, "type": "value" }
+          ]
+        }
+      },
+      "title": "Protected Client (AS400) - Reachability",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "Expected: RED (AS600 accepts hijacked route)",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "id": 202,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "count_over_time({container_name=~\"$client_vulnerable\"} |= \"status=success\"[30s]) or vector(0)",
+          "legendFormat": "Ping Success Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "max": 15,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": [
+             { "options": { "0": { "text": "BLACKHOLED", "color": "red" } }, "type": "value" }
+          ]
+        }
+      },
+      "title": "Vulnerable Client (AS600) - Reachability",
+      "type": "stat"
+    },
+    {
+      "datasource": "Loki",
+      "description": "Logs showing Uni-Guard blocking the hijacker.",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 1 },
+      "id": 203,
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{container_name=~\"uni-guard|bird-as400\"} |= \"10.100.0.0\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Defensive Logs (Uni-Guard / AS400)",
+      "type": "logs"
+    },
+    {
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 100,
+      "title": "General Infrastructure Health",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 8 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "min(bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}) or vector(0)",
+          "legendFormat": "Global Health",
+          "refId": "A"
+        }
+      ],
+      "title": "Router Health",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 8 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "sum(bird_protocol_prefix_import_count{instance=~\"$instance\"}) or vector(0)",
+          "legendFormat": "Total Routes",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Routes Imported",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 8 },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "increase(bird_protocol_prefix_import_filter_count{instance=~\"$instance\"}[1h]) or vector(0)",
+          "legendFormat": "Filtered",
+          "refId": "A"
+        }
+      ],
+      "title": "Routes Filtered (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 8,
+      "options": {
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "bird_protocol_prefix_import_count{instance=~\"$instance\"}",
+          "legendFormat": "Import: {{name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "bird_protocol_prefix_export_count{instance=~\"$instance\"}",
+          "legendFormat": "Export: {{name}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Route Propagation (Import vs Export)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "proto": true,
+              "router": true,
+              "ip_version": false
+            },
+            "indexByName": {
+              "name": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "Value": "Status",
+              "name": "Protocol Name (Peer)",
+              "export_filter": "Export Policy",
+              "import_filter": "Import Policy"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ]
+        }
+      },
+      "title": "Active BGP Peers",
+      "type": "table"
+    },
+    {
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+      "id": 101,
+      "title": "Non-Functional Metrics (Stability & Audit)",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Spikes indicate instability or flapping sessions.",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
+      "id": 12,
+      "targets": [
+        {
+          "expr": "changes(bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}[10m]) or vector(0)",
+          "legendFormat": "Flaps: {{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Convergence Stability (Session Flaps / 10m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Loki",
+      "description": "All logs for the selected Container.",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
+      "id": 14,
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"docker\", container_name=~\"$logs_container\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Router Audit Logs (All)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["bgp", "bird", "logs"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": "Prometheus",
+        "definition": "label_values(bird_protocol_up, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Router",
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": "label_values(bird_protocol_up, instance)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "Loki",
+        "definition": "label_values(container_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Protected Client (AS400)",
+        "multi": false,
+        "name": "client_protected",
+        "options": [],
+        "query": "label_values(container_name)",
+        "refresh": 1,
+        "regex": "/.*client.*|.*as400.*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "Loki",
+        "definition": "label_values(container_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Vulnerable Client (AS600)",
+        "multi": false,
+        "name": "client_vulnerable",
+        "options": [],
+        "query": "label_values(container_name)",
+        "refresh": 1,
+        "regex": "/.*client.*|.*as600.*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "Loki",
+        "definition": "label_values(container_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Logs",
+        "multi": false,
+        "name": "logs_container",
+        "options": [],
+        "query": "label_values(container_name)",
+        "refresh": 1,
+        "regex": "/as[0-9]+/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "title": "BGP Simulation: Hijack Impact",
+  "uid": "ebe914ae-ac95-456c-b819-233aa88318af",
+  "version": 1
+}

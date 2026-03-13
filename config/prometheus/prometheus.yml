@@ -1,89 +1,63 @@
 # my global config
 global:
-  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
-  # scrape_timeout is set to the global default (10s).
+  scrape_interval:     15s
+  evaluation_interval: 15s
 
-# Alertmanager configuration
-alerting:
-#  alertmanagers:
-#  - static_configs:
-#    - targets:
-# - alertmanager:9093
-
-# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-rule_files:
-# - "first_rules.yml"
-# - "second_rules.yml"
-
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
 scrape_configs:
-    - job_name: validator1
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ validator1:9545 ]
+  # ==========================================
+  # GROUP 1: BESU NODES (Consolidated)
+  # ==========================================
+  # We use a single job_name 'besu' so the Grafana Dashboard
+  # "Job" dropdown sees all nodes at once.
+  - job_name: 'besu'
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+    static_configs:
+      # Sub-group A: The Validators
+      - targets:
+          - 'validator1:9545'
+          - 'validator2:9545'
+          - 'validator3:9545'
+          - 'validator4:9545'
+          - 'validator5:9545'
+        labels:
+          service: 'validator'
+          group: 'consensus'
 
-    - job_name: validator2
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ validator2:9545 ]
+      # Sub-group B: The RPC Node
+      - targets:
+          - 'rpcnode:9545'
+        labels:
+          service: 'rpc'
+          group: 'gateway'
 
-    - job_name: validator3
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ validator3:9545 ]
+  # ==========================================
+  # GROUP 2: BGP ROUTERS
+  # ==========================================
+  - job_name: 'bird-routers'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['bird-exporter-as100:9324']
+        labels:
+          router: 'as100'
+      
+      - targets: ['bird-exporter-as200:9324']
+        labels:
+          router: 'as200'
 
-    - job_name: validator4
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ validator4:9545 ]
+      - targets: ['bird-exporter-as300:9324']
+        labels:
+          router: 'as300'
 
-    - job_name: validator5
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ validator5:9545 ]
+      - targets: ['bird-exporter-as400:9324']
+        labels:
+          router: 'as400'
 
-    - job_name: rpcnode
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ rpcnode:9545 ]
+      - targets: ['bird-exporter-as500:9324']
+        labels:
+          router: 'as500'
 
-
-    # all the nodes override themselves if given the same name
-    # so we use dns based lookup and, replace labels to
-    # alter the address from 192.168.x.y:9545 to node:192.168.x.y:9545 so they are easier to see in grafana
-    - job_name: node
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      dns_sd_configs:
-        - names:
-            - node
-          type: 'A'
-          port: 9545
-      relabel_configs:
-        - source_labels: [__address__]
-          regex: '(.*)'
-          target_label: instance
-          replacement: "node:$1"
-
+      - targets: ['bird-exporter-as600:9324']
+        labels:
+          router: 'as600'

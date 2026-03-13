@@ -1,5 +1,6 @@
 ---
 
+# --- ANCHORS ---
 x-besu-def:
   &besu-def
   restart: "on-failure"
@@ -10,37 +11,43 @@ x-besu-def:
     - /bin/bash
     - -c
     - |
-
       cp "/config/QBFTgenesis.json" /config/genesis.json
-
       /opt/besu/bin/besu \
       --config-file=/config/config.toml \
       --p2p-host=$$(hostname -i) \
       --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT \
       --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT ;
 
-#x-besu-def-attach-node:
-#  &besu-def-attach-node
-#  restart: "on-failure"
-#  image: hyperledger/besu:${BESU_VERSION:-latest}
-#  env_file:
-#    - ./config/besu/.env
-#  entrypoint:
-#    - /bin/bash
-#    - -c
-#    - |
-#
-#      cp "/config/QBFTgenesis.json" /config/genesis.json
-#
-#      /opt/besu/bin/besu \
-#      --config-file=/config/config-attach-node.toml \
-#      --p2p-host=$$(hostname -i) \
-#      --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT \
-#      --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT ;
+x-besu-def-attach-node:
+  &besu-def-attach-node
+  restart: "on-failure"
+  image: hyperledger/besu:${BESU_VERSION:-latest}
+  env_file:
+    - ./config/besu/.env
+  entrypoint:
+    - /bin/bash
+    - -c
+    - |
+      cp "/config/QBFTgenesis.json" /config/genesis.json
+      /opt/besu/bin/besu \
+      --config-file=/config/config-attach-node.toml \
+      --p2p-host=$$(hostname -i) \
+      --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT \
+      --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,QBFT ;
+
+x-bird-router: 
+  &bird-router
+  image: pierky/bird:2.0.7
+  cap_add: [NET_ADMIN]
+  networks:
+    bgp_net:
 
 services:
 
-#validator1 configured bootnode at config.toml
+  # ====================================================
+  # GROUP 1: BESU VALIDATORS
+  # ====================================================
+
   validator1:
     << : *besu-def
     container_name: validator1
@@ -54,12 +61,12 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
+      - ./config/besu:/config
       - ./config/nodes/validator1:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./logs/node1:/tmp/besu
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.11
+      bgp_net:
+        ipv4_address: 172.18.0.101
 
   validator2:
     << : *besu-def
@@ -74,14 +81,14 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
+      - ./config/besu:/config
       - ./config/nodes/validator2:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./logs/node2:/tmp/besu
     depends_on:
       - validator1
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.12
+      bgp_net:
+        ipv4_address: 172.18.0.102
 
   validator3:
     << : *besu-def
@@ -96,14 +103,14 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
+      - ./config/besu:/config
       - ./config/nodes/validator3:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./logs/node3:/tmp/besu
     depends_on:
       - validator1
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.13
+      bgp_net:
+        ipv4_address: 172.18.0.103
 
   validator4:
     << : *besu-def
@@ -118,37 +125,36 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
+      - ./config/besu:/config
       - ./config/nodes/validator4:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./logs/node4:/tmp/besu
     depends_on:
       - validator1
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.14
+      bgp_net:
+        ipv4_address: 172.18.0.104
 
-
-#  validator5:
-#    << : *besu-def-attach-node
-#    container_name: validator5
-#    ports:
-#      - 21005:8545/tcp
-#      - 30303
-#      - 9545
-#    environment:
-#      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator5,service.version=${BESU_VERSION:-latest}
-#      - SERVICE_NAME=validator5
-#    labels:
-#      - "consensus=besu"
-#    volumes:
-#      - ./config/besu/:/config
-#      - ./config/nodes/validator5:/opt/besu/keys
-#      - ./logs/besu:/tmp/besu
-#    depends_on:
-#      - validator1
-#    networks:
-#      network2:
-#        ipv4_address: 172.16.239.20
+  validator5:
+    << : *besu-def-attach-node
+    container_name: validator5
+    ports:
+      - 21005:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator5,service.version=${BESU_VERSION:-latest}
+      - SERVICE_NAME=validator5
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./config/besu:/config
+      - ./config/nodes/validator5:/opt/besu/keys
+      - ./logs/node5:/tmp/besu
+    depends_on:
+      - validator1
+    networks:
+      bgp_net:
+        ipv4_address: 172.18.0.105
 
   rpcnode:
     << : *besu-def
@@ -157,19 +163,190 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=service.name=rpcnode,service.version=${BESU_VERSION:-latest}
       - SERVICE_NAME=rpcnode
     volumes:
-      - ./config/besu/:/config
+      - ./config/besu:/config
       - ./config/nodes/rpcnode:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./logs/rpcnode:/tmp/besu
     depends_on:
       - validator1
     ports:
       - 8545:8545/tcp
       - 8546:8546/tcp
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.15
+      bgp_net:
+        ipv4_address: 172.18.0.106
 
-#EXPLORER
+  # ====================================================
+  # GROUP 2: BGP ROUTERS
+  # ====================================================
+
+  as100:
+    <<: *bird-router
+    container_name: as100
+    volumes:
+      - ./bird/as100.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as100:/var/run/bird 
+      - ./bird/sockets/as100:/run/bird    
+    command: sh -c "ip addr add 10.100.0.1/32 dev lo && bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl"
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.10 
+      v1_net: 
+        ipv4_address: 10.1.0.10
+
+  as200:
+    <<: *bird-router
+    container_name: as200
+    volumes:
+      - ./bird/as200.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as200:/var/run/bird
+    command: bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.20 
+      v2_net: 
+        ipv4_address: 10.2.0.20
+
+  as300:
+    <<: *bird-router
+    container_name: as300
+    volumes:
+      - ./bird/as300.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as300:/var/run/bird
+    command: bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.30 
+      v3_net: 
+        ipv4_address: 10.3.0.30
+
+  as400:
+    <<: *bird-router
+    container_name: as400
+    volumes: 
+      - ./bird/as400.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as400:/var/run/bird
+      - ./bird/blocklist.conf:/etc/bird/blocklist.conf 
+      - ./bird/sockets/as400:/run/bird
+    command: bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.40 
+      v4_net: 
+        ipv4_address: 10.4.0.40
+
+  as500:
+    <<: *bird-router
+    container_name: as500
+    volumes:
+      - ./bird/as500.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as500:/var/run/bird
+      - ./bird/hijack.conf:/etc/bird/hijack.conf
+
+    command: bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.50 
+      v5_net: 
+        ipv4_address: 10.5.0.50
+        
+  as600:
+    <<: *bird-router
+    container_name: as600
+    volumes:
+      - ./bird/as600.conf:/etc/bird/bird.conf
+      - ./bird/sockets/as600:/var/run/bird
+    command: bird -d -c /etc/bird/bird.conf -s /var/run/bird/bird.ctl
+    networks: 
+      v6_net:
+        ipv4_address: 10.6.0.60
+      bgp_net: 
+        ipv4_address: 172.18.0.60
+
+  # ====================================================
+  # CLIENTS (Traffic Generators for Simulation)
+  # ====================================================
+
+  client-user:
+    image: alpine:latest
+    container_name: client-user
+    cap_add:
+      - NET_ADMIN
+    # Pings AS100 Loopback (10.100.0.1) every 2s and logs success/fail
+    command: >
+      sh -c "apk add --no-cache iputils traceroute curl && 
+      ip route del default && 
+      ip route add default via 10.4.0.40 && 
+      while true; do 
+        if ping -c 1 -W 1 10.100.0.1 > /dev/null; then 
+          echo 'metrics=ping status=success client=client-user-as400'; 
+        else 
+          echo 'metrics=ping status=fail client=client-user-as400'; 
+        fi; 
+        sleep 2; 
+      done"
+    networks: 
+      v4_net: 
+        ipv4_address: 10.4.0.99
+
+  client-control:
+    image: alpine:latest
+    container_name: client-control
+    cap_add:
+      - NET_ADMIN
+    # Pings AS100 Loopback (10.100.0.1) every 2s and logs success/fail
+    command: >
+      sh -c "apk add --no-cache iputils traceroute curl && 
+      ip route del default && 
+      ip route add default via 10.6.0.60 && 
+      while true; do 
+        if ping -c 1 -W 1 10.100.0.1 > /dev/null; then 
+          echo 'metrics=ping status=success client=client-control-as600'; 
+        else 
+          echo 'metrics=ping status=fail client=client-control-as600'; 
+        fi; 
+        sleep 2; 
+      done"
+    networks: 
+      v6_net: 
+        ipv4_address: 10.6.0.99 
+  
+  # ====================================================
+  # GROUP 3: MIDDLEWARE (Security Automation)
+  # ====================================================
+
+  uni-guard:
+    build: ./middleware
+    container_name: uni-guard
+    depends_on: [rpcnode, as400]
+    volumes: 
+      - ./middleware/data:/app/data
+      - ./bird/sockets/as400:/var/run/bird
+      - ./bird/blocklist.conf:/etc/bird/blocklist.conf
+    environment:
+      - WEB3_PROVIDER=http://172.18.0.106:8545
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - PYTHONUNBUFFERED=1
+    command: python uni_guard.py
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.65
+
+  rir-admin-cli:
+    build: ./middleware
+    container_name: rir-admin-cli
+    environment:
+      - WEB3_PROVIDER=http://172.18.0.101:8545
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - PYTHONUNBUFFERED=1
+    command: python rir_admin.py
+    networks: 
+      bgp_net: 
+        ipv4_address: 172.18.0.70
+
+  # ====================================================
+  # GROUP 4: EXPLORER
+  # ====================================================
+
   explorer:
     image: consensys/quorum-explorer:${QUORUM_EXPLORER_VERSION:-latest}
     container_name: explorer
@@ -181,76 +358,179 @@ services:
     ports:
       - 25000:25000/tcp
     networks:
-      iob-besu-network:
-        ipv4_address: 172.16.239.31
+      bgp_net:
+        ipv4_address: 172.18.0.131
+        
+  # ====================================================
+  # GROUP 5: MONITORING
+  # ====================================================
 
-#MONITORING
-  # prometheus:
-  #   image: "prom/prometheus:v2.46.0"
-  #   container_name: prometheus
-  #   volumes:
-  #     - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus:/prometheus
-  #   command:
-  #     - --config.file=/etc/prometheus/prometheus.yml
-  #   ports:
-  #     - 9090:9090/tcp
-  #   networks:
-  #     iob-besu-network:
-  #       ipv4_address: 172.16.239.32
+  prometheus:
+    image: "prom/prometheus:v2.46.0"
+    container_name: prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090/tcp
+    networks:
+      bgp_net:
+        ipv4_address: 172.18.0.132
 
-  # grafana:
-  #   image: "grafana/grafana:10.1.0"
-  #   container_name: grafana
-  #   environment:
-  #     - GF_AUTH_ANONYMOUS_ENABLED=true
-  #     - GF_USERS_VIEWERS_CAN_EDIT=true
-  #   volumes:
-  #     - ./config/grafana/provisioning/:/etc/grafana/provisioning/
-  #     - grafana:/var/lib/grafana
-  #   ports:
-  #     - 3000:3000/tcp
-  #   networks:
-  #     iob-besu-network:
-  #       ipv4_address: 172.16.239.33
+  grafana:
+    image: "grafana/grafana:10.1.0"
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_USERS_VIEWERS_CAN_EDIT=true
+    volumes:
+      - ./config/grafana/provisioning/:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana:/var/lib/grafana
+    ports:
+      - 3000:3000/tcp
+    networks:
+      bgp_net:
+        ipv4_address: 172.18.0.133
 
-  # loki:
-  #   image: "grafana/loki:2.8.4"
-  #   container_name: loki
-  #   volumes:
-  #     - ./loki/loki.yml:/etc/loki/local-config.yaml
-  #   command: -config.file=/etc/loki/local-config.yaml
-  #   ports:
-  #     - 3100:3100/tcp
-  #   networks:
-  #     iob-besu-network:
-  #       ipv4_address: 172.16.239.34
+  loki:
+    image: "grafana/loki:2.8.4"
+    container_name: loki
+    volumes:
+      - ./loki/loki.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - 3100:3100/tcp
+    networks:
+      bgp_net:
+        ipv4_address: 172.18.0.134
 
-  # promtail:
-  #   image: "grafana/promtail:2.8.4"
-  #   container_name: promtail
-  #   volumes:
-  #     - ./logs:/var/log
-  #     - ./promtail/promtail.yml:/etc/promtail/config.yml
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   command: -config.file=/etc/promtail/config.yml
-  #   networks:
-  #     iob-besu-network:
-  #       ipv4_address: 172.16.239.35
+  promtail:
+    image: "grafana/promtail:2.8.4"
+    container_name: promtail
+    volumes:
+      - ./logs:/var/log
+      - ./promtail/promtail.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      bgp_net:
+        ipv4_address: 172.18.0.135
+
+  # ====================================================
+  # GROUP 6: EXPORTERS
+  # ====================================================
+  
+  # This defaults them to internal port 9324, which matches the ports mapping on here and at the prometheus.
+
+  bird-exporter-as100:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as100
+    volumes:
+      - ./bird/sockets/as100:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9324:9324/tcp
+    networks:
+      - bgp_net
+
+  bird-exporter-as200:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as200
+    volumes:
+      - ./bird/sockets/as200:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9325:9324/tcp  # Host: 9325 -> Container: 9324
+    networks:
+      - bgp_net
+
+  bird-exporter-as300:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as300
+    volumes:
+      - ./bird/sockets/as300:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9326:9324/tcp  # Host: 9326 -> Container: 9324
+    networks:
+      - bgp_net
+
+  bird-exporter-as400:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as400
+    volumes:
+      - ./bird/sockets/as400:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9327:9324/tcp  # Host: 9327 -> Container: 9324
+    networks:
+      - bgp_net
+
+  bird-exporter-as500:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as500
+    volumes:
+      - ./bird/sockets/as500:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9328:9324/tcp  # Host: 9328 -> Container: 9324
+    networks:
+      - bgp_net
+
+  bird-exporter-as600:
+    image: czerwonk/bird_exporter:latest
+    container_name: bird-exporter-as600
+    volumes:
+      - ./bird/sockets/as600:/var/run/bird
+    command: ["-bird.socket", "/var/run/bird/bird.ctl", "-bird.ipv6=false", "-format.new=true"]
+    ports:
+      - 9329:9324/tcp  # Host: 9329 -> Container: 9324
+    networks:
+      - bgp_net
 
 volumes:
   public-keys:
   prometheus:
   grafana:
 
-
 networks:
-  iob-besu-network:
-    name: iob-besu-network
+  bgp_net:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.16.239.0/24
-#  network2:
-#    name: iob-besu-network
-#    external: true
+        - subnet: 172.18.0.0/24
+
+  v1_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.0.0/24
+  v2_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.0.0/24
+  v3_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.3.0.0/24
+  v4_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.4.0.0/24
+  v5_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/24
+  v6_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.6.0.0/24

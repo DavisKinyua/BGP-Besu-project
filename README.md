@@ -1,144 +1,117 @@
-# Iob Besu Network Workshop
+## Service Endpoints
 
-## Table of Contents
+* **RPC Node:** `http://localhost:8545`
+* **Quorum Explorer:** `http://localhost:25000`
+* **Prometheus:** `http://localhost:9090`
+* **Grafana:** `http://localhost:3000`
 
-- [Iob Besu Network Workshop]
-  - [Exercise 1: Configure and run a private QBFT (POA) Besu Network](./README.md/#exercise-1-configure-and-run-a-private-qbft-poa-besu-network)
-  - [Exercise 2: Deploy a new validator node and join the Network](./README.md/#exercise-2-deploy-a-new-validator-node-and-join-the-network)
-  - [Exercise 3: Deploy and explore analytics tools](./README.md/#exercise-3-deploy-and-explore-analytics-tools)
-  - [Exercise 4: Deploy and interact with contract](./README.md/#exercise-4-deploy-and-interact-with-contract)
+## Logs
+Logs are mapped to the `./logs` directory on your host machine.
 
-
-## Prerequisites
-
-To run these tutorials, you must have the following installed:
-
-- [Docker and Docker-compose](https://docs.docker.com/compose/install/)
-
-## Exercise 1: Configure and run a private QBFT (POA) Besu Network
-This exercise is designed to give you hands-on experience with setting up a permissioned blockchain network. By the end, you’ll understand the key steps involved in deploying a private network, establishing consensus rules, and connecting nodes securely and efficiently.
-
-In this exercise, you will:
-
-**Configure the Network Genesis File**: We’ll start by setting up a genesis file to define the network's parameters, such as chain ID and consensus algorithm, and establish the initial state of the blockchain.
-
-**Set up Validator Nodes**: Next, you’ll configure nodes to act as validators, the designated participants responsible for producing new blocks. In a PoA network, these nodes are pivotal in maintaining the blockchain’s integrity.
-
-**Start and Connect Nodes**: You’ll bring up the nodes and connect them within the private network, ensuring that communication is established between validators.
-
-**Verify Network Connectivity and Block Production**: Finally, we’ll verify that the network is successfully producing blocks and maintaining connectivity between nodes.
-
-### Step by step:
-
-Start services and the network:
-1. Run script `./run.sh`
-    ```
-    *************************************
-    Iob Besu Network Quickstart
-    *************************************
-    Start network
-    --------------------
-    Starting network...
-    [+] Running 13/13
-     ✔ Network iob-besu-network                 Created                                                                                                                                                                                                                        0.1s 
-     ✔ Container iob-besu-network-validator1  Started                                                                                                                                                                                                                        0.9s 
-     ✔ Container iob-besu-network-validator2  Started                                                                                                                                                                                                                        1.6s 
-     ✔ Container iob-besu-network-validator4  Started                                                                                                                                                                                                                        1.3s 
-     ✔ Container iob-besu-network-validator3  Started                                                                                                                                                                                                                        1.2s 
-     ✔ Container rpcnode                        Started                                                                                                                                                                                                                        1.5s 
-     ✔ Container iob-besu-network-explorer    Started                                                                                                                                                                                                                        1.9s 
-    *************************************
-    Iob Besu Network Quickstart 
-    *************************************
-    ----------------------------------
-    List endpoints and services
-    ----------------------------------
-    JSON-RPC HTTP service endpoint                 : http://localhost:8545
-    JSON-RPC WebSocket service endpoint            : ws://localhost:8546
-    Web block explorer address                     : http://localhost:25000/explorer/nodes
-    
-    For more information on the endpoints and services, refer to README.md in the installation directory.
-    ```
-
-## Exercise 2: Deploy a new validator node and join the Network
-In this next part of our workshop, we’ll be taking the private Besu network you configured in Exercise 1 and expanding it by deploying an additional node and connecting it to the network.
-
-In this exercise, you will:
-
-**Deploy and Configure a New Validator Node**: Start by setting up a new Besu node, preparing it with the necessary configuration files to ensure it aligns with the existing network.
-
-**Set Up Node Connectivity Parameters**: Configure the new node’s network settings so it can find and communicate with existing nodes in the network.
-
-**Join the Node to the Network**: Establish a connection between the new node and the network by syncing it with the current state of the blockchain. We’ll cover any specific requirements for permissioned nodes and how to securely integrate them.
-
-**Verify Node Synchronization and Connectivity**: Finally, ensure that the new node is properly connected, synchronized, and participating in block validation. You’ll also learn techniques for troubleshooting connectivity issues in case any arise.
+Check status of a particular container
+docker ps -a --filter "name=your_container_name" --format "{{.Status}}"
+docker ps -a --filter "name=uni-guard" --format "{{.Status}}"
 
 
-### Step by step:
+For AS400 to work:
+docker exec as400 sh -c "echo 'function check_blocklist() { return false; }' > /etc/bird/blocklist.conf"
 
-1. Following the deployed network on Exercise 1, in the docker-compose.yml file uncomment:
-   * x-besu-def-attach-node: definition of custom toml without `node-private-key-file` param enabled, this will create node keys when node starts
-   * validator5: definition of the new validator
-   * network2: validator5 will strart in a diferent network (network2)
-2. Run `docker compose up -d` to update current network with new validator5
-    ````
-       ✔ Container iob-besu-network-validator1  Running
-       ✔ Container iob-besu-network-validator4  Running
-       ✔ Container rpcnode                      Running
-       ✔ Container iob-besu-network-validator3  Running
-       ✔ Container iob-besu-network-explorer    Running
-       ✔ Container iob-besu-network-validator2  Running
-       ✔ Container iob-besu-network-validator5  Started
-    ````
-3. Retrieve validator5 **enode**  and add permissions to validators and rpc node using `perm_addNodesToAllowlist` method:
-    ```bash
-    #Validators
-    curl -X POST --data '{"jsonrpc":"2.0","method":"perm_addNodesToAllowlist","params":[["<ENODE_VALIDATOR_5>"]], "id":1}' http://localhost:21001
-    curl -X POST --data '{"jsonrpc":"2.0","method":"perm_addNodesToAllowlist","params":[["<ENODE_VALIDATOR_5>"]], "id":1}' http://localhost:21002
-    curl -X POST --data '{"jsonrpc":"2.0","method":"perm_addNodesToAllowlist","params":[["<ENODE_VALIDATOR_5>"]], "id":1}' http://localhost:21003
-    curl -X POST --data '{"jsonrpc":"2.0","method":"perm_addNodesToAllowlist","params":[["<ENODE_VALIDATOR_5>"]], "id":1}' http://localhost:21004
-    #RCP Node
-    curl -X POST --data '{"jsonrpc":"2.0","method":"perm_addNodesToAllowlist","params":[["<ENODE_VALIDATOR_5>"]], "id":1}' http://localhost:8545
-    ```
-4. Verifiy that validator1 `peerCount`, for example, has changed from 4 to 5
-    ```bash
-    curl -X POST --data '{"jsonrpc":"2.0","method":"net_peerCount","params":[],"id":1}' http://localhost:21001'
-    ```
-## Exercise 3: Deploy and explore analytics tools
-In this exercise, we’ll shift focus from network configuration to monitoring and analytics, adding visibility into the blockchain's performance and activity. Here, you’ll deploy analytics tools that enable you to gain deeper insights into your Besu network, track key metrics, and troubleshoot issues effectively.
+command to show bird.conf of running router:
+docker exec as400 cat /etc/bird/bird.conf
 
-In this exercise, you will:
+command to show blocked invalid routes:
+docker exec as400 cat /etc/bird/blocklist.conf
 
-**Deploy Monitoring Tools**: Begin by setting up key monitoring and analytics tools, such as Prometheus and Grafana, to capture and visualize blockchain metrics. These tools are widely used for monitoring distributed systems, offering flexibility in tracking a range of metrics.
+show neighbors:
+docker exec as400 grep -E "neighbor|router id" /etc/bird/bird.conf
 
-**Configure Metrics Collection in Besu:** You’ll configure your Besu nodes to export relevant metrics to the analytics tools. This includes configuring endpoints for data export and setting up dashboards to display key indicators like block times, peer connectivity, and resource consumption.
 
-**Explore Real-Time Network Data**: Once the analytics tools are connected, you’ll explore the dashboards, interpret different metrics, and understand what they reveal about your network’s status and performance.
+identify all neighbors by name routing sources details:
+docker exec as400 birdc -s /var/run/bird/bird.ctl show protocols
 
-### Step by step:
+Show specific neigbor detail:
+docker exec as400 birdc -s /var/run/bird/bird.ctl show protocols <neighbor_name>
+docker exec as400 birdc -s /var/run/bird/bird.ctl show protocols AS500
 
-1. In the docker-compose.yml file, uncomment the following services and run `docker compose up -d`:
-   * prometheus: An open-source system for collecting and storing real-time application and infrastructure metrics.
-   * loki: A log aggregation tool for efficiently collecting and managing log data from multiple sources.
-   * grafana: A visualization platform for creating dashboards to monitor and analyze metrics in real-time.
-   * promtail: A log collector that sends logs to Loki for centralized management and search.
-    ````
-       ✔ Container iob-besu-network-validator1  Running 
-       ✔ Container iob-besu-network-validator4  Running
-       ✔ Container rpcnode                      Running   
-       ✔ Container iob-besu-network-validator3  Running
-       ✔ Container iob-besu-network-validator5  Running  
-       ✔ Container iob-besu-network-validator2  Running
-       ✔ Container iob-besu-network-explorer    Started
-       ✔ Container iob-besu-network-prometheus  Started
-       ✔ Container iob-besu-network-loki        Started
-       ✔ Container iob-besu-network-grafana     Started  
-       ✔ Container iob-besu-network-promtail    Started
-    ````
-2. Explore Grafana Besu Dashboard: http://localhost:3000/d/XE4V0WGZz/besu-overview?orgId=1&refresh=10s&from=now-30m&to=now&var-system=All
-3. Explore Prometheus: http://localhost:9090/graph
-4. Explore Logs: http://localhost:3000/d/Ak6eXLsPxFemKYKEXfcH/quorum-logs-loki?orgId=1&var-app=besu&var-search=
-5. Explore blocks and transactions: http://localhost:25000/explorer/nodes
 
-## Exercise 4: Deploy and interact with contract
-[Deploy and interact with contract](./erc20/README.md)
+show specific route in the routing table:
+docker exec as400 birdc -s /var/run/bird/bird.ctl show route for 10.100.0.1/32
+docker exec as400 birdc -s /var/run/bird/bird.ctl show route | grep -E "10.100.0.1"
+
+show more details on why specific routes choosen:
+docker exec as400 birdc -s /var/run/bird/bird.ctl show route for 10.100.0.1/32 all
+
+Filter Variations: Depending on what you are looking for, you can use these variations:
+
+All paths (not just primary):	show route 10.1.0.0/24
+The best path only:				show route primary 10.1.0.0/24
+Routes from a specific peer:	show route protocol <neighbor_name>
+Where an IP belongs:			show route for 10.1.0.5 (BIRD finds the matching subnet)
+
+
+Enable a disabled neighbor:
+docker exec as400 birdc -s /var/run/bird/bird.ctl enable <neighbor_name>
+docker exec as400 birdc -s /var/run/bird/bird.ctl enable AS500
+
+Perform reload:
+docker exec as400 birdc -s /var/run/bird/bird.ctl configure
+
+soft reconfigure:
+docker exec as400 birdc -s /var/run/bird/bird.ctl reload all
+
+Docker
+docker compose stop AS500
+docker compose build -d AS500
+
+Strictly enforce valid upstream neigbors for AS400 as AS300: on uni-guard
+VALID_UPSTREAMS = [300]
+this blocks all routes received from AS500.
+
+AS400 to accept AS500's legitimate routes but block AS500's hijacked routes (like 10.100.0.1/32), simply add 500 to AS400 trusted neighbors list in uni_guard.py:
+VALID_UPSTREAMS = [300, 500]
+docker compose stop uni-guard
+docker compose build uni-guard
+
+
+Testing attack simulation:
+
+1. Stop Uni-Guard: First, shut down python security container so it stops monitoring the BGP network:
+docker compose stop uni-guard
+
+2. Reset the AS400 Blocklist
+Even with the bot stopped, BIRD will continue enforcing the last configuration it was given. manually empty the blocklist.conf file and tell the router to apply the blank slate
+
+docker exec as400 sh -c "echo 'define BAD_PREFIXES = [ 127.0.0.1/32 ];' > /etc/bird/blocklist.conf && birdc -s /var/run/bird/bird.ctl configure"
+
+3. Verify the Hijack Propagation
+when the filters are cleared and the guard is sleeping, AS400 will blindly trust the routes advertised by AS500.
+docker exec as400 birdc show route
+
+show routes exported to a particular neighbor:
+docker exec as400 birdc -s /var/run/bird/bird.ctl show route export AS300
+
+
+
+The complete automated control panel for the demonstration using these four commands:
+
+1. Start the Attack: ./attack.sh
+(Shows the hijack entering AS600, but being blocked by Uni-Guard on AS400).
+
+2. Show the Vulnerability: ./stop_guard.sh
+(Uni-Guard goes to sleep. The hijack instantly propagates into AS400. Pings from client-user will fail).
+
+3. Defense: ./start_guard.sh
+(Uni-Guard wakes up, scans the table, sees the hijack, and dynamically filters it. Pings from client-user restore).
+
+4. End the Scenario: ./stop_attack.sh
+(The attacker stops advertising the malicious route, returning the whole network to peace).
+
+
+
+Ensure Uni-Guard is running: Use ./start_guard.sh to ensure the bot is actively scanning.
+
+Launch the Attack: Run ./attack.sh.
+
+Check Unprotected AS600: Run docker exec as600 birdc -s /var/run/bird/bird.ctl show route. You will see it has accepted both poisoned routes.
+
+Check Protected AS400: Watch the Uni-Guard logs (docker logs -f uni-guard). You will see it identify the fake ROA origin, identify the spoofed ASPA path, and slam the door on both of them!

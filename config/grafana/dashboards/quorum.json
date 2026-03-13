@@ -1,0 +1,125 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 4 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "chain_head_block{job=\"$job\", instance=\"$instance\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Block Height",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 4 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "p2p_peers{job=\"$job\", instance=\"$instance\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Peers",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 4 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "txpool_pending{job=\"$job\", instance=\"$instance\"}",
+          "legendFormat": "Pending",
+          "refId": "A"
+        },
+        {
+          "expr": "txpool_queued{job=\"$job\", instance=\"$instance\"}",
+          "legendFormat": "Queued",
+          "refId": "B"
+        }
+      ],
+      "title": "Tx Pool Status",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 10 },
+      "id": 5,
+      "title": "System Resources",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total{job=\"$job\", instance=\"$instance\"}[1m]) * 100",
+          "legendFormat": "CPU %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"$job\", instance=\"$instance\"}",
+          "legendFormat": "RAM",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    }
+  ],
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["quorum", "geth"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "label": "Data Source",
+        "type": "datasource",
+        "query": "prometheus"
+      },
+      {
+        "name": "job",
+        "label": "Job",
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(chain_head_block, job)",
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(chain_head_block{job=\"$job\"}, instance)",
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "title": "Quorum Node Status",
+  "uid": "quorum-node-monitoring",
+  "version": 1
+}

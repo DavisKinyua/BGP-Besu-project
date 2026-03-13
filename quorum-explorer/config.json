@@ -2,41 +2,40 @@
   "algorithm": "qbft",
   "nodes": [
     {
-      "name": "rpcnode",
+      "name": "RPC Node",
       "client": "besu",
-      "rpcUrl": "http://rpcnode:8545",
+      "rpcUrl": "http://172.18.0.106:8545",
       "privateTxUrl": ""
     },
     {
-      "name": "validator1",
+      "name": "Validator 1 (RIR)",
       "client": "besu",
-      "rpcUrl": "http://validator1:8545",
+      "rpcUrl": "http://172.18.0.101:8545",
       "privateTxUrl": ""
     },
     {
-      "name": "validator2",
+      "name": "Validator 2",
       "client": "besu",
-      "rpcUrl": "http://validator2:8545",
+      "rpcUrl": "http://172.18.0.102:8545",
       "privateTxUrl": ""
     },
     {
-      "name": "validator3",
+      "name": "Validator 3",
       "client": "besu",
-      "rpcUrl": "http://validator3:8545",
+      "rpcUrl": "http://172.18.0.103:8545",
       "privateTxUrl": ""
     },
     {
-      "name": "validator4",
+      "name": "Validator 4",
       "client": "besu",
-      "rpcUrl": "http://validator4:8545",
+      "rpcUrl": "http://172.18.0.104:8545",
       "privateTxUrl": ""
     },
     {
-      "name": "validator5",
+      "name": "Validator 5",
       "client": "besu",
-      "rpcUrl": "http://validator5:8545",
+      "rpcUrl": "http://172.18.0.105:8545",
       "privateTxUrl": ""
     }
   ]
 }
- 

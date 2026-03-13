@@ -1,0 +1,271 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Functional Metrics (Routing)",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "min(bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}) or vector(0)",
+          "legendFormat": "Global Health",
+          "refId": "A"
+        }
+      ],
+      "title": "Router Health",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "sum(bird_protocol_prefix_import_count{instance=~\"$instance\"}) or vector(0)",
+          "legendFormat": "Total Routes",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Routes Imported",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 1 },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "increase(bird_protocol_prefix_import_filter_count{instance=~\"$instance\"}[1h]) or vector(0)",
+          "legendFormat": "Filtered",
+          "refId": "A"
+        }
+      ],
+      "title": "Routes Filtered (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "id": 8,
+      "options": {
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "expr": "bird_protocol_prefix_import_count{instance=~\"$instance\"}",
+          "legendFormat": "Import: {{name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "bird_protocol_prefix_export_count{instance=~\"$instance\"}",
+          "legendFormat": "Export: {{name}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Route Propagation (Import vs Export)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "proto": true,
+              "router": true,
+              "ip_version": false
+            },
+            "indexByName": {
+              "name": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "Value": "Status",
+              "name": "Protocol Name (Peer)",
+              "export_filter": "Export Policy",
+              "import_filter": "Import Policy"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ]
+        }
+      },
+      "title": "Active BGP Peers",
+      "type": "table"
+    },
+    {
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 },
+      "id": 101,
+      "title": "Non-Functional Metrics (Stability & Audit)",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Spikes indicate instability or flapping sessions.",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 14 },
+      "id": 12,
+      "targets": [
+        {
+          "expr": "changes(bird_protocol_up{proto=\"BGP\", instance=~\"$instance\"}[10m]) or vector(0)",
+          "legendFormat": "Flaps: {{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Convergence Stability (Session Flaps / 10m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Loki",
+      "description": "All logs for the selected Container.",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 14 },
+      "id": 14,
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"docker\", container_name=~\"$logs_container\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Router Audit Logs (All)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["bgp", "bird", "logs"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": "Prometheus",
+        "definition": "label_values(bird_protocol_up, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Router",
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": "label_values(bird_protocol_up, instance)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "Loki",
+        "definition": "label_values(container_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Select Logs",
+        "multi": false,
+        "name": "logs_container",
+        "options": [],
+        "query": "label_values(container_name)",
+        "refresh": 1,
+        "regex": "/as[0-9]+/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "title": "Active BGP Sessions",
+  "uid": "ebe914ae-ac95-456c-b819-233aa88318af",
+  "version": 1
+}

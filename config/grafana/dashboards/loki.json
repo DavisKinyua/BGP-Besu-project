@@ -1,0 +1,81 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "datasource": "${DS_LOKI}",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Log Volume (Errors vs Info)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({job=\"$job\", instance=~\"$instance\"} [$__interval]))",
+          "legendFormat": "{{level}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_LOKI}",
+      "gridPos": { "h": 18, "w": 24, "x": 0, "y": 6 },
+      "id": 2,
+      "title": "Live Logs",
+      "type": "logs",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"$job\", instance=~\"$instance\"} |= \"$search\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["loki", "logs"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_LOKI",
+        "label": "Loki Source",
+        "type": "datasource",
+        "query": "loki"
+      },
+      {
+        "name": "job",
+        "label": "Job",
+        "type": "query",
+        "datasource": "${DS_LOKI}",
+        "query": "label_values(job)",
+        "sort": 1
+      },
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": "${DS_LOKI}",
+        "query": "label_values({job=\"$job\"}, instance)",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true
+      },
+      {
+        "name": "search",
+        "label": "Search String",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": "", "value": "" }
+      }
+    ]
+  },
+  "title": "Loki Log Explorer",
+  "uid": "loki-log-explorer",
+  "version": 1
+}

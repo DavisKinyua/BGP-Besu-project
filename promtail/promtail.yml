@@ -35,7 +35,7 @@ scrape_configs:
         - localhost
       labels:
         job: besu
-        __path__: /var/log/besu/*.log
+        __path__: /var/log/**/*.log
 
   - job_name: tessera
     pipeline_stages:
@@ -71,4 +71,24 @@ scrape_configs:
         - localhost
       labels:
         job: quorum
-        __path__: /var/log/quorum/*.log      
+        __path__: /var/log/quorum/*.log 
+
+  # ==========================================
+  # 1. DOCKER CONTAINER LOGS (For Uni-Guard)
+  # ==========================================
+  # This section reads logs from the Docker socket.
+  # It captures stdout/stderr from 'uni-guard' and all other containers.
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      # Extract the container name (e.g., /project_uni-guard_1 -> uni-guard)
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(?:[^/]+_)?([^/]+?)(?:_[0-9]+)?'  # Regex to clean up docker-compose names
+        target_label: 'container_name'
+      
+      # Optional: Add a specific label for your dashboard queries
+      - source_labels: ['container_name']
+        target_label: 'job' 
+        replacement: 'docker'
